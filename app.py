@@ -101,26 +101,72 @@ fruit.goto(random.randint(-(gamewidth / 2),(gamewidth / 2)), random.randint(-(ga
 
 fruit.shapesize(1,1)
 
+def reset_body():
+    global score, snake
+    time.sleep(2)
+    head.goto(0, 0)
+    head.direction = "stop"
+    score = 0
+    # segments of snake moved way off screen and then cleared.
+    ## potential bug as the clear() function does not seem to clear all the drawings.
+    for s in snake:
+        s.goto(10000, 10000)
+        # s.reset()
+        s.clear()
+    snake = []
+    x, y = random.randint(-(gamewidth / 2) + 10,
+                          (gamewidth / 2) - 10), random.randint(
+        -(gameheight / 2) + 10, (gameheight / 2) - 10)
+    fruit.goto(x, y)
+
+
 #declare main loop to keep updating the window and perform other functions
 while game == True:
     win.update()
-    move()
     time.sleep(delay)
     # eat food
     if head.distance(fruit) < 20:
         x, y = random.randint(-(gamewidth / 2)+10,(gamewidth / 2)-10), random.randint(-(gameheight / 2)+10, (gameheight / 2)-10)
         fruit.goto(x, y)
-        score += 10
+        score += 20
         body = turtle.Turtle()
         body.speed(0)
-        body.shape("triangle")
+        body.shape("square")
         body.color("orange")
         body.penup()
         snake.append(body)
     scoretext.clear()
     scoretext.write("Score: " + str(score))
+    #step through snake list and move the end piece up through the list of locations.
+    for i in range(len(snake)-1, 0, -1):
+        x, y = snake[i-1].xcor(), snake[i-1].ycor()
+        snake[i].goto(x, y)
+    #for the front snake segment, move this to the position of the head.
+    if len(snake) > 0:
+        x,y = head.xcor(), head.ycor()
+        snake[0].goto(x, y)
+
+    # the board does not loop. the edges are collisions
+    if head.xcor() < -(gamewidth / 2)+10 or head.xcor() > (gamewidth / 2)+10 or head.ycor() < -(gameheight / 2)+10 or head.ycor() > (gameheight / 2)+10:
+        reset_body()
+
+
+    #check for collisions with the snake head and the snake body
+    move()
+    for s in snake:
+        if s.distance(head) < 1:
+            reset_body()
+
     if head.direction != "stop":
         score +=1
+
+    if score > 0:
+
+        level = (score//100)
+        print(level)
+        extradelay = 0.01 * level
+        print(extradelay)
+        delay = 0.1 - extradelay
 
 
 
